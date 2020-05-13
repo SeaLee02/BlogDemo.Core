@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlogDemo.Core.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace BlogDemo.Core.Controllers
 {
+    /// <summary>
+    /// 天气管理
+    /// </summary>
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
@@ -23,6 +27,10 @@ namespace BlogDemo.Core.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// 获取接口数据
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
@@ -35,5 +43,35 @@ namespace BlogDemo.Core.Controllers
             })
             .ToArray();
         }
+
+
+        /// <summary>
+        /// post
+        /// </summary>
+        /// <param name="love">model实体类参数</param>
+        [HttpPost]
+        public void Post(Love love)
+        {
+
+
+
+
+        }
+
+
+        /// <summary>
+        /// post
+        /// </summary>
+        [HttpPost("Create")]
+        [ApiExplorerSettings(IgnoreApi = true)]  //隐藏接口，可以控制器上面
+        public void Create()
+        {
+
+
+
+
+        }
+
+
     }
 }

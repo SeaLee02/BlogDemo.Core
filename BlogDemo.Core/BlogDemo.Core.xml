@@ -4,6 +4,27 @@
         <name>BlogDemo.Core</name>
     </assembly>
     <members>
+        <member name="M:BlogDemo.Core.Controllers.ValuesController.Get">
+            <summary>
+            这个需要认证，角色必须是Admin，其他的不需要
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:BlogDemo.Core.Controllers.ValuesController.Get(System.Int32)">
+            <summary>
+            这个也需要认证，只不过登录即可，不一定是Admin
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:BlogDemo.Core.Controllers.ValuesController.GetJWTToken(System.String,System.String)">
+            <summary>
+            登录接口：随便输入字符，获取token，然后添加 Authoritarian
+            </summary>
+            <param name="name"></param>
+            <param name="pass"></param>
+            <returns></returns>
+        </member>
         <member name="T:BlogDemo.Core.Controllers.WeatherForecastController">
             <summary>
             天气管理
@@ -26,11 +47,67 @@
             post
             </summary>
         </member>
+        <member name="T:BlogDemo.Core.Helper.Appsettings">
+            <summary>
+            appsettings.json操作类
+            </summary>
+        </member>
+        <member name="M:BlogDemo.Core.Helper.Appsettings.app(System.String[])">
+            <summary>
+            封装要操作的字符
+            </summary>
+            <param name="sections"></param>
+            <returns></returns>
+        </member>
+        <member name="M:BlogDemo.Core.Helper.JwtHelper.IssueJWT(BlogDemo.Core.Helper.TokenModelJWT)">
+            <summary>
+            颁发JWT字符串
+            </summary>
+            <param name="tokenModel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:BlogDemo.Core.Helper.JwtHelper.SerializeJWT(System.String)">
+            <summary>
+            解析
+            </summary>
+            <param name="jwtStr"></param>
+            <returns></returns>
+        </member>
+        <member name="T:BlogDemo.Core.Helper.TokenModelJWT">
+            <summary>
+            令牌
+            </summary>
+        </member>
+        <member name="P:BlogDemo.Core.Helper.TokenModelJWT.Uid">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:BlogDemo.Core.Helper.TokenModelJWT.Role">
+            <summary>
+            角色
+            </summary>
+        </member>
+        <member name="P:BlogDemo.Core.Helper.TokenModelJWT.Work">
+            <summary>
+            职能
+            </summary>
+        </member>
         <member name="M:BlogDemo.Core.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             构造函数
             </summary>
             <param name="configuration"></param>
+        </member>
+        <member name="F:BlogDemo.Core.ApiVersions.v1">
+            <summary>
+            v1 版本
+            </summary>
+        </member>
+        <member name="F:BlogDemo.Core.ApiVersions.v2">
+            <summary>
+            v2 版本
+            </summary>
         </member>
     </members>
 </doc>

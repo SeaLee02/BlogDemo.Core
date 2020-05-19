@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using BlogDemo.Core.Helper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace BlogDemo.Core
@@ -20,7 +24,7 @@ namespace BlogDemo.Core
 
         public string ApiName { get; set; } = "Blog.Core";
 
-       
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -41,18 +45,22 @@ namespace BlogDemo.Core
 
             services.AddSwaggerGen(c =>
             {
-                //配置信息
-                c.SwaggerDoc("V1", new OpenApiInfo
+                //遍历出全部的版本，做文档信息展示
+                typeof(ApiVersions).GetEnumNames().ToList().ForEach(version =>
                 {
-                    // {ApiName} 定义成全局变量，方便修改
-                    Version = "V1",
-                    Title = $"{ApiName} 接口文档——Netcore 3.0",
-                    Description = $"{ApiName} HTTP API V1",
-                    Contact = new OpenApiContact { Name = ApiName, Email = "Blog.Core@xxx.com", Url = new Uri("https://www.jianshu.com/u/94102b59cc2a") },
-                    License = new OpenApiLicense { Name = ApiName, Url = new Uri("https://www.jianshu.com/u/94102b59cc2a") }
+                    c.SwaggerDoc(version, new OpenApiInfo
+                    {
+                        // {ApiName} 定义成全局变量，方便修改
+                        Version = version,
+                        Title = $"{ApiName} 接口文档——Netcore 3.0",
+                        Description = $"{ApiName} HTTP API " + version,
+                        Contact = new OpenApiContact { Name = ApiName, Email = "Blog.Core@xxx.com", Url = new Uri("https://www.jianshu.com/u/94102b59cc2a") },
+                        License = new OpenApiLicense { Name = ApiName, Url = new Uri("https://www.jianshu.com/u/94102b59cc2a") }
+                    });
+                    c.OrderActionsBy(o => o.RelativePath);
                 });
-                //排序    
-                c.OrderActionsBy(o => o.RelativePath);
+
+
 
                 var basePath = AppDomain.CurrentDomain.BaseDirectory;
                 //添加注释
@@ -62,7 +70,71 @@ namespace BlogDemo.Core
                 var xmlModelPath = Path.Combine(basePath, "BlogDemo.Core.Model.xml");//这个就是Model层的xml文件名
                 c.IncludeXmlComments(xmlModelPath);
 
+
+                #region Token绑定到ConfigureServices
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT授权(数据将在请求头中进行传输) 直接在下框中输入Bearer {token}（注意两者之间是一个空格）\"",
+                    Name = "Authorization",//jwt默认的参数名称
+                    In = ParameterLocation.Header,//jwt默认存放Authorization信息的位置(请求头中)
+                    Type = SecuritySchemeType.ApiKey
+                });
+                #endregion
+
+
             });
+
+
+            // 1【授权】、这个和上边的异曲同工，好处就是不用在controller中，写多个 roles 。
+            // 然后这么写 [Authorize(Policy = "Admin")]
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Client", policy => policy.RequireRole("Client").Build());
+                options.AddPolicy("Admin", policy => policy.RequireRole("Admin").Build());
+                options.AddPolicy("SystemOrAdmin", policy => policy.RequireRole("Admin", "System"));
+            });
+
+
+
+
+
+            #region 【认证】
+            //读取配置文件
+            var audienceConfig = Configuration.GetSection("Audience");
+            var symmetricKeyAsBase64 = audienceConfig["Secret"];
+            var keyByteArray = Encoding.ASCII.GetBytes(symmetricKeyAsBase64);
+            var signingKey = new SymmetricSecurityKey(keyByteArray);
+
+
+            //2.1【认证】
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+              .AddJwtBearer(o =>
+              {
+                  o.TokenValidationParameters = new TokenValidationParameters
+                  {
+                      ValidateIssuerSigningKey = true,
+                      IssuerSigningKey = signingKey,
+                      ValidateIssuer = true,
+                      ValidIssuer = audienceConfig["Issuer"],//发行人
+                      ValidateAudience = true,
+                      ValidAudience = audienceConfig["Audience"],//订阅人
+                      ValidateLifetime = true,
+                      ClockSkew = TimeSpan.Zero,
+                      RequireExpirationTime = true,
+                  };
+              });
+
+
+
+
+
+
+            #endregion
+
 
 
         }
@@ -79,13 +151,22 @@ namespace BlogDemo.Core
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint($"/swagger/V1/swagger.json", $"{ApiName} V1");
+                //根据版本名称倒序 遍历展示
+                typeof(ApiVersions).GetEnumNames().OrderByDescending(e => e).ToList().ForEach(version =>
+                {
+                    c.SwaggerEndpoint($"/swagger/{version}/swagger.json", $"{ApiName} {version}");
+                });
 
                 //路径配置，设置为空，表示直接在根域名（localhost:8001）访问该文件,注意localhost:8001/swagger是访问不到的，去launchSettings.json把launchUrl去掉，如果你想换一个路径，直接写名字即可，比如直接写c.RoutePrefix = "doc";
                 c.RoutePrefix = "";
             });
 
             app.UseRouting();
+
+            //app.UseJwtTokenAuth(); //也可以app.UseMiddleware<JwtTokenAuth>();
+
+            //如果你想使用官方认证，必须在上边ConfigureService 中，配置JWT的认证服务 (.AddAuthentication 和 .AddJwtBearer 二者缺一不可)
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
@@ -94,5 +175,19 @@ namespace BlogDemo.Core
                 endpoints.MapControllers();
             });
         }
+    }
+
+
+
+    public enum ApiVersions
+    {
+        /// <summary>
+        /// v1 版本
+        /// </summary>
+        v1 = 1,
+        /// <summary>
+        /// v2 版本
+        /// </summary>
+        v2 = 2,
     }
 }

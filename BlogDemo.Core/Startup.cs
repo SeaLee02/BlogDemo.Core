@@ -72,12 +72,27 @@ namespace BlogDemo.Core
 
 
                 #region Token绑定到ConfigureServices
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+
+                //这两个需要一起使用
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
-                    Description = "JWT授权(数据将在请求头中进行传输) 直接在下框中输入Bearer {token}（注意两者之间是一个空格）\"",
-                    Name = "Authorization",//jwt默认的参数名称
-                    In = ParameterLocation.Header,//jwt默认存放Authorization信息的位置(请求头中)
+                    Description = "在下框中输入请求头中需要添加Jwt授权Token：Bearer Token",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                {
+                     new OpenApiSecurityScheme
+                     {
+                       Reference = new OpenApiReference
+                       {
+                         Type = ReferenceType.SecurityScheme,
+                         Id = "Bearer"
+                       }
+                      },
+                      new string[] { }
+                    }
                 });
                 #endregion
 
@@ -87,12 +102,12 @@ namespace BlogDemo.Core
 
             // 1【授权】、这个和上边的异曲同工，好处就是不用在controller中，写多个 roles 。
             // 然后这么写 [Authorize(Policy = "Admin")]
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("Client", policy => policy.RequireRole("Client").Build());
-                options.AddPolicy("Admin", policy => policy.RequireRole("Admin").Build());
-                options.AddPolicy("SystemOrAdmin", policy => policy.RequireRole("Admin", "System"));
-            });
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("Client", policy => policy.RequireRole("Client").Build());
+            //    options.AddPolicy("Admin", policy => policy.RequireRole("Admin").Build());
+            //    options.AddPolicy("SystemOrAdmin", policy => policy.RequireRole("Admin", "System"));
+            //});
 
 
 
@@ -107,11 +122,7 @@ namespace BlogDemo.Core
 
 
             //2.1【认证】
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            services.AddAuthentication("Bearer")
               .AddJwtBearer(o =>
               {
                   o.TokenValidationParameters = new TokenValidationParameters
@@ -163,12 +174,13 @@ namespace BlogDemo.Core
 
             app.UseRouting();
 
-            //app.UseJwtTokenAuth(); //也可以app.UseMiddleware<JwtTokenAuth>();
-
             //如果你想使用官方认证，必须在上边ConfigureService 中，配置JWT的认证服务 (.AddAuthentication 和 .AddJwtBearer 二者缺一不可)
+            // 认证
             app.UseAuthentication();
 
+            //授权
             app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {

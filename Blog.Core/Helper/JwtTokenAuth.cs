@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlogDemo.Core.Helper
+namespace Blog.Core.Helper
 {
     public class JwtTokenAuth
     {

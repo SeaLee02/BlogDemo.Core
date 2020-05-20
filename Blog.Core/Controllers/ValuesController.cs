@@ -1,4 +1,4 @@
-﻿using BlogDemo.Core.Helper;
+﻿using Blog.Core.Helper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlogDemo.Core.Controllers
+namespace Blog.Core.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]

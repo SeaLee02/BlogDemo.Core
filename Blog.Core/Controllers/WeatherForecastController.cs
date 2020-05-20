@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BlogDemo.Core.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace BlogDemo.Core.Controllers
+namespace Blog.Core.Controllers
 {
     /// <summary>
     /// 天气管理
@@ -45,18 +44,18 @@ namespace BlogDemo.Core.Controllers
         }
 
 
-        /// <summary>
-        /// post
-        /// </summary>
-        /// <param name="love">model实体类参数</param>
-        [HttpPost]
-        public void Post(Love love)
-        {
+        ///// <summary>
+        ///// post
+        ///// </summary>
+        ///// <param name="love">model实体类参数</param>
+        //[HttpPost]
+        //public void Post(Love love)
+        //{
 
 
 
 
-        }
+        //}
 
 
         /// <summary>

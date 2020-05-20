@@ -2,11 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Blog.Core.Model</AssemblyName>
+    <RootNamespace>Blog.Core.Model</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>..\BlogDemo.Core\BlogDemo.Core.Model.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="sqlSugarCore" Version="5.0.0.14" />
+  </ItemGroup>
 
 </Project>

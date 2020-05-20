@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlogDemo.Core.Helper
+namespace Blog.Core.Helper
 {
     /// <summary>
     /// appsettings.json操作类
